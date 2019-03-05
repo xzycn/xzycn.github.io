@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://xuzhaoyang.fun/2019/03/05/Python中的延迟绑定/index.html">
 <meta property="og:site_name" content="xzyl的博客">
 <meta property="og:description" content="延迟绑定出现在闭包问题中。下面我们看一个闭包的例子：12345678def gen_mul(n):    def mul(x):        return n*x        return muldouble = gen_mul(2)doubled_value = double(6) # 12">
-<meta property="og:updated_time" content="2019-03-05T06:41:35.995Z">
+<meta property="og:updated_time" content="2019-03-05T08:58:52.393Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Python中的延迟绑定">
 <meta name="twitter:description" content="延迟绑定出现在闭包问题中。下面我们看一个闭包的例子：12345678def gen_mul(n):    def mul(x):        return n*x        return muldouble = gen_mul(2)doubled_value = double(6) # 12">
@@ -351,7 +351,12 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> partial</div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">multipliers_ch2</span><span class="params">()</span>:</span></div><div class="line">    <span class="keyword">return</span> [partial(<span class="keyword">lambda</span> m,x : m * x,i) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">4</span>)]</div></pre></td></tr></table></figure>
 </li>
 </ol>
-<p>partial会在以后中分享。</p>
+<p>partial会在以后分享。</p>
+<ol>
+<li>利用生成器的延迟计算：<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">multipliers_ch3</span><span class="params">()</span>:</span></div><div class="line">	<span class="keyword">for</span> m <span class="keyword">in</span> range(<span class="number">4</span>):</div><div class="line">    <span class="keyword">yield</span> <span class="keyword">lambda</span> x: m * x</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>生成器的内容会在以后分享。</p>
 <p>运行结果<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">print([m(<span class="number">2</span>) <span class="keyword">for</span> m <span class="keyword">in</span> multipliers_ch1()]) <span class="comment"># [0,2,4,6]</span></div><div class="line">print([m(<span class="number">2</span>) <span class="keyword">for</span> m <span class="keyword">in</span> multipliers_ch2()]) <span class="comment"># [0,2,4,6]</span></div></pre></td></tr></table></figure></p>
 <h4 id="注"><a href="#注" class="headerlink" title="注:"></a>注:</h4><p><strong>自由变量</strong>：指未在本地作用域中绑定的变量，我们可通过访问函数的<strong><strong>code</strong></strong>属性进行查看：</p>
 <blockquote>
