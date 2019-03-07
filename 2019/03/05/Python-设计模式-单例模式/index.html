@@ -85,18 +85,30 @@
 
 
 <meta name="description" content="单例模式是一种比较常见的设计模式，所以顺理成章的成为我们第一个介绍的设计模式。
-应用场景：">
+应用场景：
+
+资源共享。例如，数据库连接。
+
+实现方法有多种：">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Python 设计模式 - 单例模式">
 <meta property="og:url" content="http://xuzhaoyang.fun/2019/03/05/Python-设计模式-单例模式/index.html">
 <meta property="og:site_name" content="xzyl的博客">
 <meta property="og:description" content="单例模式是一种比较常见的设计模式，所以顺理成章的成为我们第一个介绍的设计模式。
-应用场景：">
-<meta property="og:updated_time" content="2019-03-06T06:26:31.469Z">
+应用场景：
+
+资源共享。例如，数据库连接。
+
+实现方法有多种：">
+<meta property="og:updated_time" content="2019-03-06T09:00:04.335Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Python 设计模式 - 单例模式">
 <meta name="twitter:description" content="单例模式是一种比较常见的设计模式，所以顺理成章的成为我们第一个介绍的设计模式。
-应用场景：">
+应用场景：
+
+资源共享。例如，数据库连接。
+
+实现方法有多种：">
 
 
 
@@ -325,9 +337,15 @@
       
         <p>单例模式是一种比较常见的设计模式，所以顺理成章的成为我们第一个介绍的设计模式。</p>
 <p>应用场景：</p>
-<ol>
-<li></li>
-</ol>
+<ul>
+<li>资源共享。例如，数据库连接。</li>
+</ul>
+<p>实现方法有多种：<br><a id="more"></a></p>
+<ul>
+<li>使用<strong>__new__</strong></li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Singleton</span>:</span></div><div class="line">    _instance = <span class="keyword">None</span></div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__new__</span><span class="params">(cls, *args, **kwargs)</span>:</span></div><div class="line">        <span class="keyword">if</span> cls._instance <span class="keyword">is</span> <span class="keyword">None</span>:</div><div class="line">            cls._instance = super().__new__(cls)</div><div class="line">        </div><div class="line">        <span class="keyword">return</span> cls._instance</div><div class="line">        </div><div class="line">ins1 = Singleton()</div><div class="line">ins2 = Singleton()</div><div class="line">id(ins1) == id(ins2) <span class="comment"># True</span></div></pre></td></tr></table></figure>
+<p>- </p>
 
       
     </div>
