@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"xuzhaoyang.fun","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="历史今天我们聊的不是”古老”的 JAVA SSH，而是诞生至今已20多年的网络安全协议-SSH。SSH 是 Secure Shell 的简称，是一种使得数据在网络中安全传输的协议。在信息爆炸，信息安全愈发重要的今天，SSH 已无处不在，应用十分广泛，正如其官网描述的：   The SSH (Secure Shell) protocol is used for remote logins, file">
+<meta property="og:type" content="article">
+<meta property="og:title" content="走近SSH">
+<meta property="og:url" content="http://xuzhaoyang.fun/2020/07/25/%E8%B5%B0%E8%BF%91SSH/index.html">
+<meta property="og:site_name" content="xzyl的博客">
+<meta property="og:description" content="历史今天我们聊的不是”古老”的 JAVA SSH，而是诞生至今已20多年的网络安全协议-SSH。SSH 是 Secure Shell 的简称，是一种使得数据在网络中安全传输的协议。在信息爆炸，信息安全愈发重要的今天，SSH 已无处不在，应用十分广泛，正如其官网描述的：   The SSH (Secure Shell) protocol is used for remote logins, file">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://xuzhaoyang.fun/2020/07/25/%E8%B5%B0%E8%BF%91SSH/1.png">
+<meta property="og:image" content="http://xuzhaoyang.fun/2020/07/25/%E8%B5%B0%E8%BF%91SSH/image-20200808180126978.png">
+<meta property="og:image" content="http://xuzhaoyang.fun/2020/07/25/%E8%B5%B0%E8%BF%91SSH/image-20200808173754873.png">
+<meta property="og:image" content="http://xuzhaoyang.fun/2020/07/25/%E8%B5%B0%E8%BF%91SSH/image-20200808181605747.png">
+<meta property="article:published_time" content="2020-07-25T16:54:57.000Z">
+<meta property="article:modified_time" content="2020-08-09T14:38:36.303Z">
+<meta property="article:author" content="lordran">
+<meta property="article:tag" content="SSH">
+<meta property="article:tag" content="运维">
+<meta property="article:tag" content="DevOPS">
+<meta property="article:tag" content="安全">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://xuzhaoyang.fun/2020/07/25/%E8%B5%B0%E8%BF%91SSH/1.png">
+
+<link rel="canonical" href="http://xuzhaoyang.fun/2020/07/25/%E8%B5%B0%E8%BF%91SSH/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>走近SSH | xzyl的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">xzyl的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">沉淀，分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://xuzhaoyang.fun/2020/07/25/%E8%B5%B0%E8%BF%91SSH/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="lordran">
+      <meta itemprop="description" content="xzyl的博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xzyl的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          走近SSH
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-25 16:54:57" itemprop="dateCreated datePublished" datetime="2020-07-25T16:54:57+00:00">2020-07-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-09 14:38:36" itemprop="dateModified" datetime="2020-08-09T14:38:36+00:00">2020-08-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%8D%8F%E8%AE%AE/" itemprop="url" rel="index"><span itemprop="name">协议</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h3><p>今天我们聊的不是”古老”的 JAVA SSH，而是诞生至今已20多年的网络安全协议-SSH。SSH 是 <strong>Secure Shell</strong> 的简称，是一种使得数据在网络中安全传输的协议。在信息爆炸，信息安全愈发重要的今天，SSH 已无处不在，应用十分广泛，正如其官网描述的：</p>
+<blockquote>
+<p> The SSH (Secure Shell) protocol is used for remote logins, file transfers, and automated systems management. It is used to manage the Internet infrastructure, cloud infrastructure, enterprise IT infrastructure, and remote servers in data centers.</p>
+</blockquote>
+<a id="more"></a>
+<p>是的，其也在云基础设施广泛使用，SSH 早已成一个标准，各个类 Unix 或 Linux 都原生支持，SSH 运维或者如今的 DevOPS   对于其再熟悉不过了。</p>
+<h3 id="加密"><a href="#加密" class="headerlink" title="加密"></a>加密</h3><p>​    SSH 作为一个安全协议，SSH 起初只是为了使得即使在不安全的网络环境下也能保障数据传输的安全。安全来自于 SSH 使用的各种加密算法，如：aes, rsa, dsa, ecdsa 等，其中的 rsa 使用就相当广泛。当然这里需要强调的是，<strong>SSH 中是使用对称加密来加密进行通信的，非对称加密只是用在认证用户身份</strong>。</p>
+<h3 id="实践道原理"><a href="#实践道原理" class="headerlink" title="实践道原理"></a>实践道原理</h3><p>​    SSH只是一个协议，所以有各种各样的实现，有商业的，也有开源的。开源中以 OpenSSH 最为出名，也是最广泛使用的开源实现。 Xshell，PuTTY 等软件都集成或者实现了 SSH 协议。SSH 的实现使用 CS (Client-Server) 模式，所以 SSH 有客户端和服务端，下面是它们的交互过程：</p>
+<img src="/2020/07/25/%E8%B5%B0%E8%BF%91SSH/1.png" class=""> 
+<ol>
+<li><p>客户端与服务端建立连接</p>
+</li>
+<li><p>客户端发送公钥到服务端</p>
+</li>
+<li><p>服务端验证并建立安全通道</p>
+</li>
+<li><p>客户端登录到服务端</p>
+</li>
+</ol>
+<p>SSH 最常用的就是免密登陆，我们就以免密登陆的实际操作来说明 SSH 的原理。</p>
+<p>下面我会演示一个实际登录远程服务器的例子来说明 SSH 的工作过程。</p>
+<p>SSH server：172.22.8.204</p>
+<p>user: test</p>
+<h4 id="会话加密协商（Session-Encryption-Negotiation）"><a href="#会话加密协商（Session-Encryption-Negotiation）" class="headerlink" title="会话加密协商（Session Encryption Negotiation）"></a>会话加密协商（<strong>Session Encryption Negotiation</strong>）</h4><p>使用test账号登录到服务器：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ ssh <span class="built_in">test</span>@172.22.8.204</span><br><span class="line">The authenticity of host <span class="string">'172.22.8.204 (172.22.8.204)'</span> can<span class="string">'t be established.</span></span><br><span class="line"><span class="string">RSA key fingerprint is SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs.</span></span><br><span class="line"><span class="string">Are you sure you want to continue connecting (yes/no/[fingerprint])?</span></span><br></pre></td></tr></table></figure>
+<p>出现了让选择项，这个选择项应该很多人都见到过。使用-v选项查看详情：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ ssh -v <span class="built_in">test</span>@172.22.8.204</span><br><span class="line">OpenSSH_8.2p1 Ubuntu-4ubuntu0.1, OpenSSL 1.1.1f  31 Mar 2020</span><br><span class="line">debug1: Reading configuration data /etc/ssh/ssh_config</span><br><span class="line">debug1: /etc/ssh/ssh_config line 19: include /etc/ssh/ssh_config.d/*.conf matched no files</span><br><span class="line">debug1: /etc/ssh/ssh_config line 21: Applying options <span class="keyword">for</span> *</span><br><span class="line">debug1: Connecting to 172.22.8.204 [172.22.8.204] port 22.</span><br><span class="line">debug1: Connection established.</span><br><span class="line">debug1: identity file /root/.ssh/id_rsa <span class="built_in">type</span> -1</span><br><span class="line">debug1: identity file /root/.ssh/id_rsa-cert <span class="built_in">type</span> -1</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">debug1: Local version string SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.1</span><br><span class="line">debug1: Remote protocol version 2.0, remote software version OpenSSH_8.2p1 Ubuntu-4</span><br><span class="line">debug1: match: OpenSSH_8.2p1 Ubuntu-4 pat OpenSSH* compat 0x04000000</span><br><span class="line">debug1: Authenticating to 172.22.8.204:22 as <span class="string">'test'</span></span><br><span class="line">debug1: SSH2_MSG_KEXINIT sent</span><br><span class="line">debug1: SSH2_MSG_KEXINIT received</span><br><span class="line">debug1: kex: algorithm: curve25519-sha256</span><br><span class="line">debug1: kex: host key algorithm: rsa-sha2-512</span><br><span class="line">debug1: kex: server-&gt;client cipher: chacha20-poly1305@openssh.com MAC: &lt;implicit&gt; compression: none</span><br><span class="line">debug1: kex: client-&gt;server cipher: chacha20-poly1305@openssh.com MAC: &lt;implicit&gt; compression: none</span><br><span class="line">debug1: expecting SSH2_MSG_KEX_ECDH_REPLY</span><br><span class="line">debug1: Server host key: ssh-rsa SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs</span><br><span class="line">The authenticity of host <span class="string">'172.22.8.204 (172.22.8.204)'</span> can<span class="string">'t be established.</span></span><br><span class="line"><span class="string">RSA key fingerprint is SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs.</span></span><br><span class="line"><span class="string">Are you sure you want to continue connecting (yes/no/[fingerprint])?</span></span><br></pre></td></tr></table></figure>
+<p>我们可以看到：</p>
+<blockquote>
+<p>Server host key: ssh-rsa SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs</p>
+</blockquote>
+<p>该散列值和下面的一致：</p>
+<blockquote>
+<p>RSA key fingerprint is SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs</p>
+</blockquote>
+<p>我们此时可以在服务端运行debug模式，查看日志：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">debug1: audit_event: unhandled event 12</span><br><span class="line">➜  ~ sudo /usr/sbin/sshd -d</span><br><span class="line">debug1: sshd version OpenSSH_8.2, OpenSSL 1.1.1f  31 Mar 2020</span><br><span class="line">debug1: private host key <span class="comment">#0: ssh-rsa SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs</span></span><br><span class="line">debug1: Unable to load host key: /etc/ssh/ssh_host_ecdsa_key</span><br><span class="line">debug1: Unable to load host key: /etc/ssh/ssh_host_ed25519_key</span><br><span class="line">debug1: rexec_argv[0]=<span class="string">'/usr/sbin/sshd'</span></span><br><span class="line">debug1: rexec_argv[1]=<span class="string">'-d'</span></span><br><span class="line">debug1: Set /proc/self/oom_score_adj from 0 to -1000</span><br><span class="line">debug1: Bind to port 22 on 0.0.0.0.</span><br><span class="line">Server listening on 0.0.0.0 port 22.</span><br></pre></td></tr></table></figure>
+<p>可以看到:</p>
+<blockquote>
+<p>private host key #0: ssh-rsa SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs</p>
+</blockquote>
+<p>可以看到三者都是一致的。</p>
+<h5 id="host-key"><a href="#host-key" class="headerlink" title="host key"></a>host key</h5><p>这里引出一个概念：host key</p>
+<p>host key 是为了客户端验证服务器的身份真实性，使用非对称加密算法。私钥存在服务端，正如上面在客户端日志中看到的：</p>
+<blockquote>
+<p>Server host key: ssh-rsa SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs</p>
+</blockquote>
+<p>公钥由服务端发送给客户端。公钥是由给定的私钥得到的，私钥文件名如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /etc/ssh/sshd_config 配置文件</span></span><br><span class="line"><span class="comment">#HostKey /etc/ssh/ssh_host_rsa_key</span></span><br><span class="line"><span class="comment">#HostKey /etc/ssh/ssh_host_ecdsa_key</span></span><br><span class="line"><span class="comment">#HostKey /etc/ssh/ssh_host_ed25519_key</span></span><br></pre></td></tr></table></figure>
+<p>sshd 在启动时会依次寻找这些设置的文件，在删掉这些文件后：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ sudo /usr/sbin/sshd -d</span><br><span class="line">[sudo] password <span class="keyword">for</span> xzy:</span><br><span class="line">debug1: sshd version OpenSSH_8.2, OpenSSL 1.1.1f  31 Mar 2020</span><br><span class="line">debug1: Unable to load host key: /etc/ssh/ssh_host_rsa_key</span><br><span class="line">debug1: Unable to load host key: /etc/ssh/ssh_host_ecdsa_key</span><br><span class="line">debug1: Unable to load host key: /etc/ssh/ssh_host_ed25519_key</span><br><span class="line">sshd: no hostkeys available -- exiting.</span><br></pre></td></tr></table></figure>
+<p>可以看到日志正如上面描述的，找不到 host key 文件，无法启动。遇到该问题，使用 ssh-keygen 生成一个密钥文件到指定位置就可以解决，文件名需要与配置中的一致。</p>
+<p>由于默认存在 ssh_host_rsa_key 文件，所以使用了 ssh_host_rsa_key 中的私钥来生成公钥。</p>
+<p>不过上面三者都提到的数据并<strong>不是公钥</strong>，而是公钥对应的指纹哈希(fingerprint_hash)，直接在服务器上运行如下命令可以看到由私钥生成的指纹哈希：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ sudo ssh-keygen -l -f /etc/ssh/ssh_host_rsa_key</span><br><span class="line">3072 SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs root@qyq (RSA)</span><br><span class="line"><span class="comment"># 服务端的公钥</span></span><br><span class="line">➜  xuzha sudo ssh-keygen -y -f /etc/ssh/ssh_host_rsa_key</span><br><span class="line">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDGr00hIjIBa37HagDxipqaSvevuyAt4niRUvYqoV8ecfaQG/SXytsGiwOPNn3zeKGc66JhJGOMBC8SW4Ph9ok8pmurDd2noQse3V5Sbxqs5F+4TLpSnz6aOkwHmpb0qCKqf6VmNK8MIiuCcY6H9V7DNLS4old4DDhDrf2NcSt/6nj9uGdpfeVcQD717VGC+ZrrQM4rBQica+maPr8174vGYuXVB1oIorjSzsHoFp9WWYqzKSODZj1Ur71vkaR/cSCaUIRP3UycO8n3Xynd3zAiCcRfMBnqLSr0t8PdWN+MOFRgRHVZzjUvVG4CP9o2Uih30gvtj8f15DyKDTJKsmsMVtRR1y4ZAUM+UQyjAcUmLC+GgnvGNu0d2sUwW9Nges8d8I4y+Toyai+ABXqEs0skJvjEIY6Ciuc57BTHun1348lGn6Zcxjay/FJRtwpYt5x1xrAAKY+XN5kZUjCZZxh6/En3MKckKG9BUXeXA2reF0T4UX8YMTa7lQGqY6g3gu8= root@qaq</span><br></pre></td></tr></table></figure>
+<p>这里存在一个问题：我们无法确认上面得到的指纹哈希是否真的是来自服务端，有可能在中间被人修改的，是的，这就是中间人攻击。为了确认来自于服务端，需要用额外的方式向服务端确认指纹哈希的真实性。当然使用 CA 也是常用的解决方法。</p>
+<h5 id="known-hosts"><a href="#known-hosts" class="headerlink" title="known hosts"></a>known hosts</h5><p>接着上面客户端登录，直接按回车键：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">RSA key fingerprint is SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs.</span><br><span class="line">Are you sure you want to <span class="built_in">continue</span> connecting (yes/no/[fingerprint])? yes</span><br><span class="line">Warning: Permanently added <span class="string">'172.22.8.204'</span> (RSA) to the list of known hosts.</span><br><span class="line">debug1: rekey out after 134217728 blocks</span><br><span class="line">debug1: SSH2_MSG_NEWKEYS sent</span><br><span class="line">debug1: expecting SSH2_MSG_NEWKEYS</span><br><span class="line">debug1: SSH2_MSG_NEWKEYS received</span><br><span class="line">debug1: rekey <span class="keyword">in</span> after 134217728 blocks</span><br><span class="line">debug1: Will attempt key: /root/.ssh/id_rsa</span><br><span class="line">...</span><br><span class="line">debug1: SSH2_MSG_EXT_INFO received</span><br><span class="line">debug1: kex_input_ext_info: server-sig-algs=&lt;ssh-ed25519,sk-ssh-ed25519@openssh.com,ssh-rsa,rsa-sha2-256,rsa-sha2-512,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ecdsa-sha2-nistp256@openssh.com&gt;</span><br><span class="line">debug1: SSH2_MSG_SERVICE_ACCEPT received</span><br><span class="line">debug1: Authentications that can <span class="built_in">continue</span>: publickey</span><br><span class="line">debug1: Next authentication method: publickey</span><br><span class="line">debug1: Trying private key: /root/.ssh/id_rsa</span><br><span class="line">...</span><br><span class="line">debug1: No more authentication methods to try.</span><br><span class="line"><span class="built_in">test</span>@172.22.8.204: Permission denied (publickey).</span><br></pre></td></tr></table></figure>
+<p>我们可以看到：</p>
+<blockquote>
+<p>Permanently added ‘172.22.8.204’ (RSA) to the list of known hosts.</p>
+</blockquote>
+<p>这里需要解释另外一个概念：<strong>known hosts</strong></p>
+<p>known hosts 是一个记录了上诉操作相关的远程服务器 host key 的公钥信息的文件。当公钥信息与来自服务器的公钥信息一致时，就证明了服务器的真实性。</p>
+<p>当我们再次执行登录操作：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssh -v <span class="built_in">test</span>@172.22.8.204</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">debug1: Server host key: ssh-rsa SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs</span><br><span class="line">debug1: Host <span class="string">'172.22.8.204'</span> is known and matches the RSA host key.</span><br><span class="line">debug1: Found key <span class="keyword">in</span> /root/.ssh/known_hosts:2</span><br><span class="line">debug1: rekey out after 134217728 blocks</span><br><span class="line">debug1: SSH2_MSG_NEWKEYS sent</span><br><span class="line">debug1: expecting SSH2_MSG_NEWKEYS</span><br><span class="line">debug1: SSH2_MSG_NEWKEYS received</span><br><span class="line">debug1: rekey <span class="keyword">in</span> after 134217728 blocks</span><br><span class="line">debug1: Will attempt key: /root/.ssh/id_rsa</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">debug1: Trying private key: /root/.ssh/id_rsa</span><br><span class="line">...</span><br><span class="line"><span class="built_in">test</span>@172.22.8.204: Permission denied (publickey).</span><br></pre></td></tr></table></figure>
+<p>可以看到多了下面两行信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">debug1: Host <span class="string">'172.22.8.204'</span> is known and matches the RSA host key.</span><br><span class="line">debug1: Found key <span class="keyword">in</span> /root/.ssh/known_hosts:2</span><br></pre></td></tr></table></figure>
+<p>但目前为止其实我们已经完成了 SSH 工作流的第一步：<strong>会话加密协商</strong>，这也是在<strong>加密</strong>一节中提到的：SSH 是用对称加密加密连接的实现原理。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">debug1: Local version string SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.1</span><br><span class="line">debug1: Remote protocol version 2.0, remote software version OpenSSH_8.2p1 Ubuntu-4</span><br></pre></td></tr></table></figure>
+<p>这一部分描述了双方支持的 SSH 协议版本，并最终匹配出了合适的版本:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">debug1: match: OpenSSH_8.2p1 Ubuntu-4 pat OpenSSH* compat 0x04000000</span><br></pre></td></tr></table></figure>
+<p>协商过程其实是对会话加密使用的密钥生成的过程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">debug1: SSH2_MSG_KEXINIT sent</span><br><span class="line">debug1: SSH2_MSG_KEXINIT received</span><br><span class="line">debug1: kex: algorithm: curve25519-sha256</span><br><span class="line">debug1: kex: host key algorithm: rsa-sha2-512</span><br><span class="line">debug1: kex: server-&gt;client cipher: chacha20-poly1305@openssh.com MAC: &lt;implicit&gt; compression: none</span><br><span class="line">debug1: kex: client-&gt;server cipher: chacha20-poly1305@openssh.com MAC: &lt;implicit&gt; compression: none</span><br><span class="line">debug1: expecting SSH2_MSG_KEX_ECDH_REPLY</span><br></pre></td></tr></table></figure>
+<p>这部分描述了对称密钥生成的一些信息，<strong>生成的密钥不会在双方传递，而是依靠各自已有的信息计算出来的</strong>，这依赖于 <a href="https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange" target="_blank" rel="noopener"><strong>Diffie-Hellman</strong></a> 算法：</p>
+<blockquote>
+<ol>
+<li>Both parties agree on a large prime number, which will serve as a seed value.</li>
+<li>Both parties agree on an encryption generator (typically AES), which will be used to manipulate the values in a predefined way.</li>
+<li>Independently, each party comes up with another prime number which is kept secret from the other party. This number is used as the private key for this interaction (different than the private SSH key used for authentication).</li>
+<li>The generated private key, the encryption generator, and the shared prime number are used to generate a public key that is derived from the private key, but which can be shared with the other party.</li>
+<li>Both participants then exchange their generated public keys.</li>
+<li>The receiving entity uses their own private key, the other party’s public key, and the original shared prime number to compute a shared secret key. Although this is independently computed by each party, using opposite private and public keys, it will result in the <em>same</em> shared secret key.</li>
+<li>The shared secret is then used to encrypt all communication that follows.</li>
+</ol>
+</blockquote>
+<p>感兴趣的同学可以到参考的页面中了解更多信息。</p>
+<p>当然这样也还是存在风险的可能，为了进一步降低风险，SS2 中还会有 <strong>rekey</strong> 机制，过一定时间就重新生成上诉的会话密钥：</p>
+<p>debug1: rekey out after 134217728 blocks<br>debug1: SSH2_MSG_NEWKEYS sent<br>debug1: expecting SSH2_MSG_NEWKEYS<br>debug1: SSH2_MSG_NEWKEYS received<br>debug1: rekey in after 134217728 blocks</p>
+<p>到此就是<strong>会话加密协商</strong>的部分。</p>
+<h4 id="验证用户信息"><a href="#验证用户信息" class="headerlink" title="验证用户信息"></a>验证用户信息</h4><p>在上面的日志中同时我们还看到：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">debug1: Trying private key: /root/.ssh/id_rsa</span><br><span class="line">...</span><br><span class="line"><span class="built_in">test</span>@172.22.8.204: Permission denied (publickey).</span><br></pre></td></tr></table></figure>
+<p> <strong>/root/.ssh/id_rsa</strong> 是我们定义在配置文件(<strong>/etc/ssh/ssh_config</strong>)中的项：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IdentityFile ~&#x2F;.ssh&#x2F;id_rsa</span><br></pre></td></tr></table></figure>
+<p>当我们访问服务端时，如果没有指定密钥文件，则会使用上面配置文件中设置的文件。</p>
+<p>但是现在我们还没有该密钥创建文件(<strong>~/.ssh/id_rsa</strong>)，先创建之：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssh-keygen</span><br><span class="line">Generating public/private rsa key pair.</span><br><span class="line">Enter file <span class="keyword">in</span> <span class="built_in">which</span> to save the key (/root/.ssh/id_rsa):</span><br><span class="line">Enter passphrase (empty <span class="keyword">for</span> no passphrase):</span><br><span class="line">Enter same passphrase again:</span><br><span class="line">Your identification has been saved <span class="keyword">in</span> /root/.ssh/id_rsa</span><br><span class="line">Your public key has been saved <span class="keyword">in</span> /root/.ssh/id_rsa.pub</span><br><span class="line">The key fingerprint is:</span><br><span class="line">SHA256:ydJlYiCF4lGxeRK9gstr84WTaIokW+jWIms31xEgmyY root@39d40aba8b3e</span><br><span class="line">The key<span class="string">'s randomart image is:</span></span><br><span class="line"><span class="string">+---[RSA 3072]----+</span></span><br><span class="line"><span class="string">|   .==o          |</span></span><br><span class="line"><span class="string">|  o..*..         |</span></span><br><span class="line"><span class="string">| . +B o.o o      |</span></span><br><span class="line"><span class="string">| Eo+.o.= =       |</span></span><br><span class="line"><span class="string">| .o. .. S        |</span></span><br><span class="line"><span class="string">| .o. o o         |</span></span><br><span class="line"><span class="string">|o.=.+ o .        |</span></span><br><span class="line"><span class="string">|*O++ + .         |</span></span><br><span class="line"><span class="string">|O+oo+            |</span></span><br><span class="line"><span class="string">+----[SHA256]-----+</span></span><br></pre></td></tr></table></figure>
+<p>这里有两个需要注意的东西：一个是密钥生成的位置。另一个是密码短语(passphrase)。</p>
+<p>第一个我们默认就好，但是需要生成多份密钥给多台服务器使用时，需要给出单独的位置。</p>
+<p>第二个密码短语在我们大多数时候都是直接为空，但是有多少人知道这个是来干啥的呢？</p>
+<blockquote>
+<p>A <em>passphrase</em> is similar to a password. However, a password generally refers to something used to authenticate or log into a system. A password generally refers to a secret used to protect an encryption key. Commonly, an actual encryption key is derived from the passphrase and used to encrypt the protected resource.</p>
+</blockquote>
+<p>密码短语是用来保护密钥的，防止密钥文件被破解，最好还是设置密码短语。</p>
+<p>我们先查看下公钥的内容，后面会用来跟服务端的公钥进行比较：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">➜  / cat ~/.ssh/id_rsa.pub</span><br><span class="line">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC9Yxq0xyho/7vuZ1QDeCD4UCLYZXYUO7E6DjWkwF9JOV27FEckoFg2WztOFGcH6Flj+vacrHtdRHIE6IpCuOZMQpmSMxW/TI4Wo6/iBUeWPZk9mYzchzfOlIy+Hsk1cDTBVMp8ep3G2dixiyQNNE7uxXaWa8m+DAlEcXFrdVER2iIAEYCNVjUsY/p3zueqVU761nWDnjEYLMoVbJ+BAcR0a30jrT5zduPbYkd44f1BSCZC38gsF6aEJDuy+6xgIWZmuypNBjZynWIupXztt5Qd6ozZJmg0pmmqSfhB9BX5H0CXZdrUO9GGgsmTUt2TeFvqRXjX+LBCWrI8AatpsmFtw0+AcJA8/9cuuCdhHNoZsAZcM/0l3UPuopwcsQqvbcuqKbgK/LodXJmqFyQhHQBX36/wJtyfPOLkwHRRGy2wPZPN2yLR0zliCJ/Xn7Fkx7E4dfunk7p/oFsDT1aWmd16CC8xIE9yRIKvG8k7TQH4yTzkxJxq4zlJrMnelU/w4w0= root@39d40aba8b3e</span><br></pre></td></tr></table></figure>
+<p>创建好密钥之后，再次开始登录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssh -v <span class="built_in">test</span>@172.22.8.204</span><br><span class="line">...</span><br><span class="line">debug1: expecting SSH2_MSG_KEX_ECDH_REPLY</span><br><span class="line">debug1: Server host key: ssh-rsa SHA256:vyZw9CtMUy3l6RWyXDgINZZvbjJxF177s0oMKYcUUqs</span><br><span class="line">debug1: Host <span class="string">'172.22.8.204'</span> is known and matches the RSA host key.</span><br><span class="line">debug1: Found key <span class="keyword">in</span> /root/.ssh/known_hosts:2</span><br><span class="line">debug1: rekey out after 134217728 blocks</span><br><span class="line">debug1: SSH2_MSG_NEWKEYS sent</span><br><span class="line">debug1: expecting SSH2_MSG_NEWKEYS</span><br><span class="line">debug1: SSH2_MSG_NEWKEYS received</span><br><span class="line">debug1: rekey <span class="keyword">in</span> after 134217728 blocks</span><br><span class="line">debug1: Will attempt key: /root/.ssh/id_rsa RSA SHA256:ydJlYiCF4lGxeRK9gstr84WTaIokW+jWIms31xEgmyY</span><br><span class="line">...</span><br><span class="line">debug1: SSH2_MSG_EXT_INFO received</span><br><span class="line">debug1: kex_input_ext_info: server-sig-algs=&lt;ssh-ed25519,sk-ssh-ed25519@openssh.com,ssh-rsa,rsa-sha2-256,rsa-sha2-512,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ecdsa-sha2-nistp256@openssh.com&gt;</span><br><span class="line">debug1: SSH2_MSG_SERVICE_ACCEPT received</span><br><span class="line">debug1: Authentications that can <span class="built_in">continue</span>: publickey</span><br><span class="line">debug1: Next authentication method: publickey</span><br><span class="line">debug1: Offering public key: /root/.ssh/id_rsa RSA SHA256:ydJlYiCF4lGxeRK9gstr84WTaIokW+jWIms31xEgmyY</span><br><span class="line">debug1: Authentications that can <span class="built_in">continue</span>: publickey</span><br><span class="line">...</span><br><span class="line">debug1: No more authentication methods to try.</span><br><span class="line"><span class="built_in">test</span>@172.22.8.204: Permission denied (publickey).</span><br></pre></td></tr></table></figure>
+<p>可以看到现在多了公钥的指纹哈希：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">debug1: Will attempt key: /root/.ssh/id_rsa RSA SHA256:ydJlYiCF4lGxeRK9gstr84WTaIokW+jWIms31xEgmyY</span><br><span class="line"><span class="comment"># 及</span></span><br><span class="line">debug1: Offering public key: /root/.ssh/id_rsa RSA SHA256:ydJlYiCF4lGxeRK9gstr84WTaIokW+jWIms31xEgmyY</span><br></pre></td></tr></table></figure>
+<p>由于现在在服务器上还没有存放客户端的公钥，所以被禁止登录。我们可以使用 ssh-copy-id 进行公钥上传：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssh-copy-id <span class="built_in">test</span>@172.22.8.204</span><br><span class="line">/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: <span class="string">"/root/.ssh/id_rsa.pub"</span></span><br><span class="line">/usr/bin/ssh-copy-id: INFO: attempting to <span class="built_in">log</span> <span class="keyword">in</span> with the new key(s), to filter out any that are already installed</span><br><span class="line">/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- <span class="keyword">if</span> you are prompted now it is to install the new keys</span><br><span class="line"><span class="built_in">test</span>@172.22.8.204: Permission denied (publickey).</span><br></pre></td></tr></table></figure>
+<p>无法上传，这时需要修改服务端上配置(<strong>/etc/ssh/sshd_config</strong>):</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PasswordAuthentication yes <span class="comment"># 设为yes</span></span><br></pre></td></tr></table></figure>
+<p>再次执行：</p>
+<figure class="highlight plain"><figcaption><span>/ ssh-copy-id test@172.21.38.72</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;usr&#x2F;bin&#x2F;ssh-copy-id: INFO: Source of key(s) to be installed: &quot;&#x2F;root&#x2F;.ssh&#x2F;id_rsa.pub&quot;</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed</span><br><span class="line">&#x2F;usr&#x2F;bin&#x2F;ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys</span><br><span class="line">test@172.22.8.204&#39;s password:</span><br></pre></td></tr></table></figure>
+<p>此时要求输入密码，输入即可：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">test</span>@172.22.8.204<span class="string">'s password:</span></span><br><span class="line"><span class="string">Authenticated to 172.22.8.204 ([172.22.8.204]:22).</span></span><br><span class="line"><span class="string">Transferred: sent 3252, received 2832 bytes, in 0.7 seconds</span></span><br><span class="line"><span class="string">Bytes per second: sent 4366.1, received 3802.2</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Number of key(s) added: 1</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Now try logging into the machine, with:   "ssh '</span><span class="built_in">test</span>@172.22.8.204<span class="string">'"</span></span><br><span class="line"><span class="string">and check to make sure that only the key(s) you wanted were added.</span></span><br></pre></td></tr></table></figure>
+<p>此时在服务端如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ ls /home/<span class="built_in">test</span>/.ssh</span><br><span class="line">authorized_keys</span><br></pre></td></tr></table></figure>
+<p>这里又出现了一个新东西：<strong>authorized_keys</strong></p>
+<h5 id="authorized-keys"><a href="#authorized-keys" class="headerlink" title="authorized_keys"></a>authorized_keys</h5><blockquote>
+<p>The <code>authorized_keys</code> file in <a href="https://www.ssh.com/ssh/" target="_blank" rel="noopener">SSH</a> specifies the SSH keys that can be used for logging into the user account for which the file is configured. It is a highly important configuration file, as it <strong>configures permanent access</strong> using <a href="https://www.ssh.com/ssh/key/" target="_blank" rel="noopener">SSH keys</a> and needs <a href="https://www.ssh.com/iam/ssh-key-management/" target="_blank" rel="noopener">proper management</a>.</p>
+</blockquote>
+<p>我们以后能不能登录就看它了。查看该文件内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ cat .ssh&#x2F;authorized_keys</span><br><span class="line">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC9Yxq0xyho&#x2F;7vuZ1QDeCD4UCLYZXYUO7E6DjWkwF9JOV27FEckoFg2WztOFGcH6Flj+vacrHtdRHIE6IpCuOZMQpmSMxW&#x2F;TI4Wo6&#x2F;iBUeWPZk9mYzchzfOlIy+Hsk1cDTBVMp8ep3G2dixiyQNNE7uxXaWa8m+DAlEcXFrdVER2iIAEYCNVjUsY&#x2F;p3zueqVU761nWDnjEYLMoVbJ+BAcR0a30jrT5zduPbYkd44f1BSCZC38gsF6aEJDuy+6xgIWZmuypNBjZynWIupXztt5Qd6ozZJmg0pmmqSfhB9BX5H0CXZdrUO9GGgsmTUt2TeFvqRXjX+LBCWrI8AatpsmFtw0+AcJA8&#x2F;9cuuCdhHNoZsAZcM&#x2F;0l3UPuopwcsQqvbcuqKbgK&#x2F;LodXJmqFyQhHQBX36&#x2F;wJtyfPOLkwHRRGy2wPZPN2yLR0zliCJ&#x2F;Xn7Fkx7E4dfunk7p&#x2F;oFsDT1aWmd16CC8xIE9yRIKvG8k7TQH4yTzkxJxq4zlJrMnelU&#x2F;w4w0&#x3D; root@39d40aba8b3e</span><br></pre></td></tr></table></figure>
+<p>跟客户端的公钥一致，其实里面存放的就是客户端的公钥，我们也可以登录服务器手动添加该文件，只是 ssh-copy-id 来得更方便。</p>
+<p>在工作中我们使用 Gitlab 托管代码，克隆代码时也需要先做同样的操作，只是操作的地方从乌漆嘛黑的命令行到了光鲜亮丽的 WEB 页面：</p>
+<img src="/2020/07/25/%E8%B5%B0%E8%BF%91SSH/image-20200808180126978.png" class=""> 
+<img src="/2020/07/25/%E8%B5%B0%E8%BF%91SSH/image-20200808173754873.png" class=""> 
+<p>上图指纹中MD5可以通过如下命令查看：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssssh-keygen -l -Emd5</span><br><span class="line">Enter file <span class="keyword">in</span> <span class="built_in">which</span> the key is (/root/.ssh/id_rsa):</span><br><span class="line">3072 MD5:e0:18:64:1b:60:8a:35:8b:fb:6e:4a:20:bd:e3:9b:5b root@39d40aba8b3e (RSA)</span><br></pre></td></tr></table></figure>
+<p>在流水线中需要克隆代码时，Jenkins 与 Gitlab间也需要配置密钥信息：</p>
+<img src="/2020/07/25/%E8%B5%B0%E8%BF%91SSH/image-20200808181605747.png" class=""> 
+<p>上面简单介绍了两处在工作中用到 SSH 的场景，接着回到我们之前的命令行中。</p>
+<p>这下我们就可以在客户端愉快的无密码登录了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssh -v <span class="built_in">test</span>@172.22.8.204</span><br><span class="line">...</span><br><span class="line">debug1: Authentications that can <span class="built_in">continue</span>: publickey,password</span><br><span class="line">debug1: Next authentication method: publickey</span><br><span class="line">debug1: Offering public key: /root/.ssh/id_rsa RSA SHA256:ydJlYiCF4lGxeRK9gstr84WTaIokW+jWIms31xEgmyY</span><br><span class="line">debug1: Server accepts key: /root/.ssh/id_rsa RSA SHA256:ydJlYiCF4lGxeRK9gstr84WTaIokW+jWIms31xEgmyY</span><br><span class="line">Enter passphrase <span class="keyword">for</span> key <span class="string">'/root/.ssh/id_rsa'</span>:</span><br></pre></td></tr></table></figure>
+<p>可以看到:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">debug1: Authentications that can <span class="built_in">continue</span>: publickey,password</span><br></pre></td></tr></table></figure>
+<p>验证方法多了一个 <strong>password</strong> ,这其实是上面修改服务端配置的效果：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PasswordAuthentication yes</span><br></pre></td></tr></table></figure>
+<p>接着回到操作，现在需要我们输入密码短语，在输入后：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">Enter passphrase <span class="keyword">for</span> key <span class="string">'/root/.ssh/id_rsa'</span>:</span><br><span class="line">debug1: Authentication succeeded (publickey).</span><br><span class="line">Authenticated to 172.22.8.204 ([172.22.8.204]:22).</span><br><span class="line">debug1: channel 0: new [client-session]</span><br><span class="line">debug1: Requesting no-more-sessions@openssh.com</span><br><span class="line">debug1: Entering interactive session.</span><br><span class="line">debug1: pledge: network</span><br><span class="line">debug1: client_input_global_request: rtype hostkeys-00@openssh.com want_reply 0</span><br><span class="line">debug1: Remote: /home/<span class="built_in">test</span>/.ssh/authorized_keys:1: key options: agent-forwarding port-forwarding pty user-rc x11-forwarding</span><br><span class="line">debug1: Remote: /home/<span class="built_in">test</span>/.ssh/authorized_keys:1: key options: agent-forwarding port-forwarding pty user-rc x11-forwarding</span><br><span class="line">debug1: Sending environment.</span><br><span class="line">Welcome to Ubuntu 20.04 LTS (GNU/Linux 4.19.104-microsoft-standard x86_64)</span><br><span class="line"></span><br><span class="line"> * Documentation:  https://help.ubuntu.com</span><br><span class="line"> * Management:     https://landscape.canonical.com</span><br><span class="line"> * Support:        https://ubuntu.com/advantage</span><br><span class="line"></span><br><span class="line">  System information as of Thu Jul 30 22:13:45 CST 2020</span><br><span class="line"></span><br><span class="line">  System load:  0.0                Processes:             28</span><br><span class="line">  Usage of /:   4.6% of 250.98GB   Users logged <span class="keyword">in</span>:       0</span><br><span class="line">  Memory usage: 8%                 IPv4 address <span class="keyword">for</span> eth0: 172.22.8.204</span><br><span class="line">  Swap usage:   0%</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">0 updates can be installed immediately.</span><br><span class="line">0 of these updates are security updates.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Last login: Thu Jul 30 22:13:29 2020 from 172.21.32.1</span><br><span class="line">$</span><br></pre></td></tr></table></figure>
+<p>终于成功了！好的就此结束，谢谢大家。<br>开玩笑，我们继续，登录了不做点什么好像没啥意义。</p>
+<p>我下面使用 SSH 做点”有意思”的事情：</p>
+<p><strong>让服务器同步Github上的代码</strong>！(服务器上已经配置好了克隆需要的信息)</p>
+<p>回到客户端：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssssh -v <span class="built_in">test</span>@172.22.8.204 <span class="string">"ssh-keyscan github.com &gt;&gt; ~/.ssh/known_hosts &amp;&amp; git clone git@github.com:xzycn/sample.git"</span></span><br><span class="line">...</span><br><span class="line">Enter passphrase <span class="keyword">for</span> key <span class="string">'/root/.ssh/id_rsa'</span>:</span><br><span class="line">debug1: Authentication succeeded (publickey).</span><br><span class="line">Authenticated to 172.22.8.204 ([172.22.8.204]:22).</span><br><span class="line">debug1: channel 0: new [client-session]</span><br><span class="line">debug1: Requesting no-more-sessions@openssh.com</span><br><span class="line">debug1: Entering interactive session.</span><br><span class="line">debug1: pledge: network</span><br><span class="line">debug1: client_input_global_request: rtype hostkeys-00@openssh.com want_reply 0</span><br><span class="line">debug1: Remote: /home/<span class="built_in">test</span>/.ssh/authorized_keys:1: key options: agent-forwarding port-forwarding pty user-rc x11-forwarding</span><br><span class="line">debug1: Remote: /home/<span class="built_in">test</span>/.ssh/authorized_keys:1: key options: agent-forwarding port-forwarding pty user-rc x11-forwarding</span><br><span class="line">debug1: Sending environment.</span><br><span class="line">debug1: Sending <span class="built_in">command</span>: ssh-keyscan github.com &gt;&gt; ~/.ssh/known_hosts &amp;&amp; git <span class="built_in">clone</span> git@github.com:xzycn/sample.git</span><br><span class="line"><span class="comment"># github.com:22 SSH-2.0-babeld-5a455904</span></span><br><span class="line"><span class="comment"># github.com:22 SSH-2.0-babeld-5a455904</span></span><br><span class="line"><span class="comment"># github.com:22 SSH-2.0-babeld-5a455904</span></span><br><span class="line"><span class="comment"># github.com:22 SSH-2.0-babeld-5a455904</span></span><br><span class="line"><span class="comment"># github.com:22 SSH-2.0-babeld-5a455904</span></span><br><span class="line">Cloning into <span class="string">'sample'</span>...</span><br><span class="line">Authenticated to github.com ([140.82.113.3]:22).</span><br><span class="line">Transferred: sent 3464, received 3424 bytes, <span class="keyword">in</span> 1.9 seconds</span><br><span class="line">Bytes per second: sent 1816.6, received 1795.7</span><br><span class="line">debug1: client_input_channel_req: channel 0 rtype <span class="built_in">exit</span>-status reply 0</span><br><span class="line">debug1: client_input_channel_req: channel 0 rtype eow@openssh.com reply 0</span><br><span class="line">debug1: channel 0: free: client-session, nchannels 1</span><br><span class="line">Transferred: sent 3284, received 4132 bytes, <span class="keyword">in</span> 10.1 seconds</span><br><span class="line">Bytes per second: sent 326.6, received 410.9</span><br><span class="line">debug1: Exit status 0</span><br></pre></td></tr></table></figure>
+<p>可以看到我们执行的命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">debug1: Sending <span class="built_in">command</span>: ssh-keyscan github.com &gt;&gt; ~/.ssh/known_hosts &amp;&amp; git <span class="built_in">clone</span> git@github.com:xzycn/sample.git</span><br></pre></td></tr></table></figure>
+<p>服务端上 sample 仓库中文件内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ cat sample/README.md</span><br><span class="line"><span class="comment"># sample</span></span><br></pre></td></tr></table></figure>
+<p>修改Github仓库中README后，让服务端同步修改：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssh -v <span class="built_in">test</span>@172.22.8.204 <span class="string">"cd sample &amp;&amp; git pull"</span></span><br><span class="line">...</span><br><span class="line">debug1: Sending <span class="built_in">command</span>: <span class="built_in">cd</span> sample &amp;&amp; git pull</span><br><span class="line">Authenticated to github.com ([140.82.113.3]:22).</span><br><span class="line">Transferred: sent 3472, received 4312 bytes, <span class="keyword">in</span> 2.1 seconds</span><br><span class="line">Bytes per second: sent 1678.5, received 2084.6</span><br><span class="line">From github.com:xzycn/sample</span><br><span class="line">   32b8fb6..83f8d36  master     -&gt; origin/master</span><br><span class="line">Updating 32b8fb6..83f8d36</span><br><span class="line">Fast-forward</span><br><span class="line"> README.md | 4 +++-</span><br><span class="line"> 1 file changed, 3 insertions(+), 1 deletion(-)</span><br><span class="line">debug1: client_input_channel_req: channel 0 rtype <span class="built_in">exit</span>-status reply 0</span><br><span class="line">debug1: client_input_channel_req: channel 0 rtype eow@openssh.com reply 0</span><br><span class="line">debug1: channel 0: free: client-session, nchannels 1</span><br><span class="line">Transferred: sent 3220, received 3992 bytes, <span class="keyword">in</span> 7.4 seconds</span><br><span class="line">Bytes per second: sent 435.0, received 539.2</span><br><span class="line">debug1: Exit status 0</span><br></pre></td></tr></table></figure>
+<p>服务端上 sample 仓库中文件内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ cat sample/README.md</span><br><span class="line"><span class="comment"># sample</span></span><br><span class="line"></span><br><span class="line">&gt; 演示仓库 <span class="comment">#  记于：2020年7月31日23:10:05</span></span><br></pre></td></tr></table></figure>
+<p>这样每次都要输一长串命令，是不是觉得很繁琐？没事儿，我们可以把这一大堆的命令塞进一个文件里：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">➜  / cat task.sh</span><br><span class="line"><span class="built_in">cd</span> sample</span><br><span class="line">git pull</span><br></pre></td></tr></table></figure>
+<p>通过将文件内容重定向到 SSH 命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssh -v <span class="built_in">test</span>@172.22.8.204  &lt; ./task.sh</span><br><span class="line">...</span><br><span class="line">debug1: Sending environment.</span><br><span class="line">Welcome to Ubuntu 20.04 LTS (GNU/Linux 4.19.104-microsoft-standard x86_64)</span><br><span class="line"></span><br><span class="line"> * Documentation:  https://help.ubuntu.com</span><br><span class="line"> * Management:     https://landscape.canonical.com</span><br><span class="line"> * Support:        https://ubuntu.com/advantage</span><br><span class="line"></span><br><span class="line">  System information as of Sat Aug  1 11:11:24 CST 2020</span><br><span class="line"></span><br><span class="line">  System load:  0.0                Processes:             20</span><br><span class="line">  Usage of /:   4.6% of 250.98GB   Users logged <span class="keyword">in</span>:       0</span><br><span class="line">  Memory usage: 8%                 IPv4 address <span class="keyword">for</span> eth0: 172.22.8.204</span><br><span class="line">  Swap usage:   0%</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">0 updates can be installed immediately.</span><br><span class="line">0 of these updates are security updates.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Authenticated to github.com ([140.82.113.3]:22).</span><br><span class="line">Transferred: sent 3268, received 2712 bytes, <span class="keyword">in</span> 0.9 seconds</span><br><span class="line">Bytes per second: sent 3810.7, received 3162.4</span><br><span class="line">Already up to date.</span><br><span class="line">debug1: client_input_channel_req: channel 0 rtype <span class="built_in">exit</span>-status reply 0</span><br><span class="line">debug1: channel 0: free: client-session, nchannels 1</span><br><span class="line">debug1: fd 0 clearing O_NONBLOCK</span><br><span class="line">Transferred: sent 3260, received 4344 bytes, <span class="keyword">in</span> 3.9 seconds</span><br><span class="line">Bytes per second: sent 835.1, received 1112.8</span><br><span class="line">debug1: Exit status 0</span><br></pre></td></tr></table></figure>
+<p>这样虽然好了点，但是在管理几十上百台服务器时还是力不从心。所以我们可以使用一些自动化运维的工具，例如 <strong>ansible</strong> ，不过这不是本文的内容，有需要的话，我后面可以写写 <strong>ansible</strong> 的专题文章。</p>
+<p>最后通过下图简单描述下整个登录的过程：</p>
+ 
+<h3 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h3><ol>
+<li>当第一次连接服务器时默认都需要检查其真实性(询问确认指纹哈希的真实性)，这会阻碍自动化脚本的执行。此时我们可以添加选项：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-o StrictHostKeyChecking=no</span><br><span class="line"><span class="comment"># 或者修改客户端的配置文件</span></span><br><span class="line">StrictHostKeyChecking=no</span><br></pre></td></tr></table></figure>
+<p>需要注意的是，<strong>这会直接将服务端公钥写入known_hosts！</strong></p>
+<p>除此之外我们还有通过 ssh-keyscan 命令批量获取服务器的公钥：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将服务器地址写入文件</span></span><br><span class="line">➜  / cat servers</span><br><span class="line">172.22.8.204</span><br><span class="line">172.22.204.5 <span class="comment"># 假地址，只为了演示说明</span></span><br><span class="line"></span><br><span class="line">➜  / ssh-keyscan -f servers 2&gt; /dev/null 1&gt;&gt;~/.ssh/known_hosts</span><br><span class="line">➜  / cacat ~/.ssh/known_hosts</span><br><span class="line">172.22.8.204 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDGr00hIjIBa37HagDxipqaSvevuyAt4niRUvYqoV8ecfaQG/SXytsGiwOPNn3zeKGc66JhJGOMBC8SW4Ph9ok8pmurDd2noQse3V5Sbxqs5F+4TLpSnz6aOkwHmpb0qCKqf6VmNK8MIiuCcY6H9V7DNLS4old4DDhDrf2NcSt/6nj9uGdpfeVcQD717VGC+ZrrQM4rBQica+maPr8174vGYuXVB1oIorjSzsHoFp9WWYqzKSODZj1Ur71vkaR/cSCaUIRP3UycO8n3Xynd3zAiCcRfMBnqLSr0t8PdWN+MOFRgRHVZzjUvVG4CP9o2Uih30gvtj8f15DyKDTJKsmsMVtRR1y4ZAUM+UQyjAcUmLC+GgnvGNu0d2sUwW9Nges8d8I4y+Toyai+ABXqEs0skJvjEIY6Ciuc57BTHun1348lGn6Zcxjay/FJRtwpYt5x1xrAAKY+XN5kZUjCZZxh6/En3MKckKG9BUXeXA2reF0T4UX8YMTa7lQGqY6g3gu8=</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li><p>在我们给客户端上的私钥加了密码短语(passphrase)后，每次都要输入它：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Enter passphrase <span class="keyword">for</span> key <span class="string">'/root/.ssh/id_rsa'</span>:</span><br></pre></td></tr></table></figure>
+<p>像极了我们在看影视剧到精彩的时候插播的广告。我们可以使用 <strong>ssh-agent</strong> 来帮助我们：</p>
+</li>
+</ol>
+<blockquote>
+<p>ssh-agent is a program to hold private keys used for public key authentication.  Through use of environment variables the agent can be located and automatically used for authentication when logging in to other machines using ssh(1).</p>
+</blockquote>
+<p><strong>ssh-agent</strong> 使用来帮助我们管理私钥的，有了它，我们后面登录服务器时不需要再输入密码短语了，既方便又没有失去安全性：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">➜  / ssh-agent <span class="comment"># 使用 ssh-add 出现 Could not open a connection to your authentication agent 错误时，使用 eval `ssh-agent -s`</span></span><br><span class="line">Agent pid 801</span><br><span class="line">➜  / ssh-add ~/.ssh/id_rsa</span><br><span class="line">Enter passphrase <span class="keyword">for</span> /root/.ssh/id_rsa:</span><br><span class="line">Identity added: /root/.ssh/id_rsa (root@39d40aba8b3e)</span><br></pre></td></tr></table></figure>
+<p>此时再次登录服务器就不需要再输入密码短语了。</p>
+<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>SSH 在现在信息世界中的重要不言而喻，对于其设计思想的理解也使我们在日常开发，系统设计时多了一些思路。对于其的一些使用的掌握更有利于问题的排查和自身工作的提效。总之，SSH 已和我们如影随形，是我们现在 IT 从业人员必备知识。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><p><a href="https://www.ssh.com/ssh" target="_blank" rel="noopener">https://www.ssh.com/ssh</a></p>
+</li>
+<li><p><a href="https://tools.ietf.org/html/rfc4253" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc4253</a></p>
+</li>
+<li><p><a href="https://en.wikipedia.org/wiki/Diffie–Hellman_key_exchange" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange</a></p>
+</li>
+<li><p><a href="https://tools.ietf.org/id/draft-ietf-curdle-ssh-kex-sha2-10.html#rfc.section.1" target="_blank" rel="noopener">https://tools.ietf.org/id/draft-ietf-curdle-ssh-kex-sha2-10.html#rfc.section.1</a></p>
+</li>
+<li><p><a href="https://stackoverflow.com/questions/17846529/could-not-open-a-connection-to-your-authentication-agent" target="_blank" rel="noopener">https://stackoverflow.com/questions/17846529/could-not-open-a-connection-to-your-authentication-agent</a></p>
+</li>
+<li><p><a href="https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process" target="_blank" rel="noopener">https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process</a></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/SSH/" rel="tag"># SSH</a>
+              <a href="/tags/%E8%BF%90%E7%BB%B4/" rel="tag"># 运维</a>
+              <a href="/tags/DevOPS/" rel="tag"># DevOPS</a>
+              <a href="/tags/%E5%AE%89%E5%85%A8/" rel="tag"># 安全</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/08/Gitlab%20%E4%B8%8D%E8%83%BD%E5%88%9B%E5%BB%BA%E5%88%86%E6%94%AF%E4%B9%8B%E8%B0%9C/" rel="prev" title="Gitlab不能创建分支之谜">
+      <i class="fa fa-chevron-left"></i> Gitlab不能创建分支之谜
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#历史"><span class="nav-number">1.</span> <span class="nav-text">历史</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加密"><span class="nav-number">2.</span> <span class="nav-text">加密</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实践道原理"><span class="nav-number">3.</span> <span class="nav-text">实践道原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#会话加密协商（Session-Encryption-Negotiation）"><span class="nav-number">3.1.</span> <span class="nav-text">会话加密协商（Session Encryption Negotiation）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#host-key"><span class="nav-number">3.1.1.</span> <span class="nav-text">host key</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#known-hosts"><span class="nav-number">3.1.2.</span> <span class="nav-text">known hosts</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#验证用户信息"><span class="nav-number">3.2.</span> <span class="nav-text">验证用户信息</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#authorized-keys"><span class="nav-number">3.2.1.</span> <span class="nav-text">authorized_keys</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#补充"><span class="nav-number">4.</span> <span class="nav-text">补充</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结语"><span class="nav-number">5.</span> <span class="nav-text">结语</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="lordran"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">lordran</p>
+  <div class="site-description" itemprop="description">xzyl的博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xzycn" title="GitHub → https://github.com/xzycn" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:xuzhaoyang1990@live.cn" title="E-Mail → mailto:xuzhaoyang1990@live.cn" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/4447404" title="StackOverflow → https://stackoverflow.com/users/4447404" rel="noopener" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i>StackOverflow</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">lordran</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var canonicalURL, curProtocol;
+      //Get the <link> tag
+      var x=document.getElementsByTagName("link");
+		//Find the last canonical URL
+		if(x.length > 0){
+			for (i=0;i<x.length;i++){
+				if(x[i].rel.toLowerCase() == 'canonical' && x[i].href){
+					canonicalURL=x[i].href;
+				}
+			}
+		}
+    //Get protocol
+	    if (!canonicalURL){
+	    	curProtocol = window.location.protocol.split(':')[0];
+	    }
+	    else{
+	    	curProtocol = canonicalURL.split(':')[0];
+	    }
+      //Get current URL if the canonical URL does not exist
+	    if (!canonicalURL) canonicalURL = window.location.href;
+	    //Assign script content. Replace current URL with the canonical URL
+      !function(){var e=/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi,r=canonicalURL,t=document.referrer;if(!e.test(r)){var n=(String(curProtocol).toLowerCase() === 'https')?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";t?(n+="?r="+encodeURIComponent(document.referrer),r&&(n+="&l="+r)):r&&(n+="?l="+r);var i=new Image;i.src=n}}(window);})();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f6b80b2c2a45db6f1fe5',
+      clientSecret: 'eb42879a0c709f9422f007fe49156d1a03cb3794',
+      repo        : 'backup',
+      owner       : 'xzycn',
+      admin       : ['xzycn'],
+      id          : 'b8fff8e780c9f4d5add97a766946ba21',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
